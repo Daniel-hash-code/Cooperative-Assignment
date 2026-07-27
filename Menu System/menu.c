@@ -42,9 +42,38 @@ int main(void)
 
         switch(choice)
         {
-            case 1:
-                printf("\nOption 1 selected.\n");
-                break;
+            case 1:{
+    printf("\n========== ALL FARMER DELIVERIES ==========\n\n");
+
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT FarmerNumber, FarmerName, ProduceType, QuantityDelivered, PricePerUnit, PaymentStatus FROM ProduceDeliveries;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SQL statement.\n");
+        printf("SQLite Error: %s\n", sqlite3_errmsg(db));
+        break;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        printf("----------------------------------------\n");
+        printf("Farmer Number : %d\n", sqlite3_column_int(stmt, 0));
+        printf("Farmer Name   : %s\n", sqlite3_column_text(stmt, 1));
+        printf("Produce Type  : %s\n", sqlite3_column_text(stmt, 2));
+        printf("Quantity      : %d\n", sqlite3_column_int(stmt, 3));
+        printf("Price Per Unit: %.2f\n", sqlite3_column_double(stmt, 4));
+        printf("Payment Status: %s\n", sqlite3_column_text(stmt, 5));
+    }
+
+    sqlite3_finalize(stmt);
+    printf("\nPress Enter to return to the main menu...");
+    getchar(); // Consume the newline character left by previous input
+    getchar(); // Wait for user to press Enter
+
+    break;
+}
 
             case 2:
                 printf("\nOption 2 selected.\n");
