@@ -307,8 +307,56 @@ int main(void)
 }
 
             case 6:
-                printf("\nOption 6 selected.\n");
-                break;
+{
+    printf("\n========== LARGE DELIVERIES ==========\n\n");
+
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT FarmerNumber, FarmerName, ProduceType, QuantityDelivered, PricePerUnit "
+            "FROM ProduceDeliveries WHERE QuantityDelivered > 200;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SQL statement.\n");
+        printf("SQLite Error: %s\n", sqlite3_errmsg(db));
+        break;
+    }
+
+    int found = 0;
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        found = 1;
+
+        int quantity = sqlite3_column_int(stmt, 3);
+        double price = sqlite3_column_double(stmt, 4);
+        double payment = quantity * price;
+
+        printf("----------------------------------------\n");
+        printf("Farmer Number : %d\n", sqlite3_column_int(stmt, 0));
+
+        printf("Farmer Name   : %s\n", sqlite3_column_text(stmt, 1));
+
+        printf("Produce Type  : %s\n", sqlite3_column_text(stmt, 2));
+
+        printf("Quantity      : %d\n", quantity);
+
+        printf("Payment Due   : KES %.2f\n", payment);
+    }
+
+    if (!found)
+    {
+        printf("No large deliveries found.\n");
+    }
+
+    sqlite3_finalize(stmt);
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();
+    getchar();
+
+    break;
+}
 
             case 7:
                 printf("\nOption 7 selected.\n");
