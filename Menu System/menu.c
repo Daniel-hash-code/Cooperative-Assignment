@@ -359,8 +359,95 @@ int main(void)
 }
 
             case 7:
-                printf("\nOption 7 selected.\n");
-                break;
+{
+    printf("\n========== DAILY COOPERATIVE REPORT ==========\n\n");
+
+    sqlite3_stmt *stmt;
+
+    const char *sql =
+    "SELECT FarmerName, QuantityDelivered, PricePerUnit, PaymentStatus "
+    "FROM ProduceDeliveries;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SQL statement.\n");
+        printf("SQLite Error: %s\n", sqlite3_errmsg(db));
+        break;
+    }
+
+    int totalFarmers = 0;
+    int totalQuantity = 0;
+    int paidFarmers = 0;
+    int pendingFarmers = 0;
+
+    double totalGrossPayment = 0;
+    double totalLevy = 0;
+    double totalNetPayment = 0;
+
+    int highestQuantity = 0;
+    char highestDeliveryFarmer[100] = "";
+
+    double highestPayment = 0;
+    char highestPaymentFarmer[100] = "";
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *farmerName = (const char *)sqlite3_column_text(stmt, 0);
+
+        int quantity = sqlite3_column_int(stmt, 1);
+        double price = sqlite3_column_double(stmt, 2);
+
+        const char *status = (const char *)sqlite3_column_text(stmt, 3);
+
+        double grossPayment = quantity * price;
+        double levy = grossPayment * 0.02;
+        double netPayment = grossPayment - levy;
+
+        totalFarmers++;
+        totalQuantity += quantity;
+
+        totalGrossPayment += grossPayment;
+        totalLevy += levy;
+        totalNetPayment += netPayment;
+
+        if(strcmp(status, "Paid") == 0)
+            paidFarmers++;
+        else
+            pendingFarmers++;
+
+        if(quantity > highestQuantity)
+        {
+            highestQuantity = quantity;
+            strcpy(highestDeliveryFarmer, farmerName);
+        }
+
+        if(grossPayment > highestPayment)
+        {
+            highestPayment = grossPayment;
+            strcpy(highestPaymentFarmer, farmerName);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+
+    printf("------------------------------------------\n");
+    printf("Total Farmers           : %d\n", totalFarmers);
+    printf("Total Quantity          : %d Units\n", totalQuantity);
+    printf("Total Gross Payment     : KES %.2f\n", totalGrossPayment);
+    printf("Total Cooperative Levy  : KES %.2f\n", totalLevy);
+    printf("Total Net Payment       : KES %.2f\n", totalNetPayment);
+    printf("Paid Farmers            : %d\n", paidFarmers);
+    printf("Pending Farmers         : %d\n", pendingFarmers);
+    printf("Highest Delivery        : %s (%d Units)\n", highestDeliveryFarmer, highestQuantity);
+    printf("Highest Payment         : %s (KES %.2f)\n", highestPaymentFarmer, highestPayment);
+    printf("------------------------------------------\n");
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();
+    getchar();
+
+    break;
+}
 
             case 8:
                 printf("\nOption 8 selected.\n");
