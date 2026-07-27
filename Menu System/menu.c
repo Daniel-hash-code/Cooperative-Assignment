@@ -228,8 +228,83 @@ int main(void)
 }
 
             case 5:
-                printf("\nOption 5 selected.\n");
-                break;
+{
+    printf("\n========== UPDATE PAYMENT STATUS ==========\n\n");
+
+    char confirm;
+
+    printf("Update all pending payments below KES 10,000? (Y/N): ");
+    scanf(" %c", &confirm);
+
+    if(confirm != 'Y' && confirm != 'y')
+    {
+        printf("\nUpdate cancelled.\n");
+
+        printf("\nPress Enter to return to the main menu...");
+        getchar();
+        getchar();
+        break;
+    }
+
+    sqlite3_stmt *selectStmt;
+    sqlite3_stmt *updateStmt;
+
+    const char *selectSQL = "SELECT FarmerNumber, FarmerName, QuantityDelivered, PricePerUnit "
+            "FROM ProduceDeliveries WHERE PaymentStatus='Pending';";
+
+    const char *updateSQL = "UPDATE ProduceDeliveries "
+            "SET PaymentStatus='Paid' WHERE FarmerNumber=?;";
+
+    if(sqlite3_prepare_v2(db, selectSQL, -1, &selectStmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SELECT statement.\n");
+        break;
+    }
+
+    if(sqlite3_prepare_v2(db, updateSQL, -1, &updateStmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare UPDATE statement.\n");
+        sqlite3_finalize(selectStmt);
+        break;
+    }
+
+    int updated = 0;
+
+    while(sqlite3_step(selectStmt) == SQLITE_ROW)
+    {
+        int farmerNumber = sqlite3_column_int(selectStmt, 0);
+        const unsigned char *farmerName = sqlite3_column_text(selectStmt, 1);
+        int quantity = sqlite3_column_int(selectStmt, 2);
+        double price = sqlite3_column_double(selectStmt, 3);
+
+        double payment = quantity * price;
+
+        if(payment < 10000)
+        {
+            sqlite3_bind_int(updateStmt, 1, farmerNumber);
+
+            if(sqlite3_step(updateStmt) == SQLITE_DONE)
+            {
+                printf("Farmer %d (%s) updated to Paid.\n", farmerNumber, farmerName);
+                updated++;
+            }
+
+            sqlite3_reset(updateStmt);
+            sqlite3_clear_bindings(updateStmt);
+        }
+    }
+
+    sqlite3_finalize(selectStmt);
+    sqlite3_finalize(updateStmt);
+
+    printf("\n%d record(s) updated successfully.\n", updated);
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();
+    getchar();
+
+    break;
+}
 
             case 6:
                 printf("\nOption 6 selected.\n");
