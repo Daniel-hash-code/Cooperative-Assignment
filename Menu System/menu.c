@@ -450,9 +450,19 @@ int main(void)
 }
 
             case 8:
-                printf("\nOption 8 selected.\n");
-                break;
+{
+    printf("\n========== SAVE UPDATED RECORDS ==========\n\n");
 
+    printf("All changes have already been saved to the database.\n");
+    printf("SQLite automatically writes successful updates to the database.\n");
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();
+    getchar();
+
+    break;
+}
+    
             case 9:
                 printf("\nExiting the system...\n");
                 break;
