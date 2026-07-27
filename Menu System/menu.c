@@ -75,9 +75,57 @@ int main(void)
     break;
 }
 
-            case 2:
-                printf("\nOption 2 selected.\n");
-                break;
+          case 2:{
+    int farmerNumber;
+
+    printf("\n========== SEARCH FARMER ==========\n");
+    printf("Enter Farmer Number: ");
+    scanf("%d", &farmerNumber);
+
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT FarmerNumber, FarmerName, ProduceType, QuantityDelivered, PricePerUnit, PaymentStatus "
+    "FROM ProduceDeliveries WHERE FarmerNumber = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SQL statement.\n");
+        printf("SQLite Error: %s\n", sqlite3_errmsg(db));
+        break;
+    }
+
+    // Bind the farmer number to the placeholder //
+    sqlite3_bind_int(stmt, 1, farmerNumber);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        printf("\n========== FARMER RECORD ==========\n");
+
+        printf("Farmer Number : %d\n", sqlite3_column_int(stmt, 0));
+
+        printf("Farmer Name   : %s\n", sqlite3_column_text(stmt, 1));
+
+        printf("Produce Type  : %s\n", sqlite3_column_text(stmt, 2));
+
+        printf("Quantity      : %d\n", sqlite3_column_int(stmt, 3));
+
+        printf("Price Per Unit: %.2f\n", sqlite3_column_double(stmt, 4));
+
+        printf("Payment Status: %s\n", sqlite3_column_text(stmt, 5));
+    }
+    else
+    {
+        printf("\nFarmer record not found.\n");
+    }
+
+    sqlite3_finalize(stmt);
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();   // Consume newline from scanf
+    getchar();   // Wait for Enter
+
+    break;
+}
 
             case 3:
                 printf("\nOption 3 selected.\n");
