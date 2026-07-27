@@ -128,8 +128,48 @@ int main(void)
 }
 
             case 3:
-                printf("\nOption 3 selected.\n");
-                break;
+{
+    printf("\n========== FARMER PAYMENTS ==========\n\n");
+
+    sqlite3_stmt *stmt;
+
+    const char *sql = "SELECT FarmerName, QuantityDelivered, PricePerUnit "
+            "FROM ProduceDeliveries;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        printf("Failed to prepare SQL statement.\n");
+        printf("SQLite Error: %s\n", sqlite3_errmsg(db));
+        break;
+    }
+
+    double payment;
+    double totalPayment = 0;
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const unsigned char *farmerName = sqlite3_column_text(stmt, 0);
+
+        int quantity = sqlite3_column_int(stmt, 1);
+        double price = sqlite3_column_double(stmt, 2);
+
+        payment = quantity * price;
+        totalPayment += payment;
+
+        printf("%-20s : KES %.2f\n", farmerName, payment);
+    }
+
+    sqlite3_finalize(stmt);
+
+    printf("-----------------------------------------\n");
+    printf("Total Amount Payable : KES %.2f\n", totalPayment);
+
+    printf("\nPress Enter to return to the main menu...");
+    getchar();
+    getchar();
+
+    break;
+}
 
             case 4:
                 printf("\nOption 4 selected.\n");
